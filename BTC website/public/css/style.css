@@ -1,0 +1,38 @@
+/* Custom styles */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+#cart-modal {
+    transition: opacity 0.3s ease;
+}
+
+#cart-modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.product-card {
+    transition: transform 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Bitcoin payment styles */
+.bitcoin-payment {
+    background-color: #f7931a;
+    color: white;
+}
+
+.bitcoin-payment:hover {
+    background-color: #e67e00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+} 

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        #cart-modal {
+            transition: opacity 0.3s ease;
+        }
+
+        #cart-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .product-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .bitcoin-payment {
+            background-color: #f7931a;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .bitcoin-payment:hover {
+            background-color: #e67e00;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        .product-details-modal {
+            transition: all 0.3s ease;
+        }
+
+        .product-details-modal.hidden {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        .search-bar {
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            transform: scale(1.02);
+        }
+
+        .category-filter {
+            transition: all 0.3s ease;
+        }
+
+        .category-filter:hover {
+            transform: translateY(-2px);
+        }
+
+        .quantity-selector {
+            width: 80px;
+        }
+
+        .shipping-option {
+            transition: all 0.3s ease;
+        }
+
+        .shipping-option:hover {
+            transform: translateX(5px);
+        }
+
+        .review-card {
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .wishlist-btn.active {
+            color: red;
+        }
+
+        .quick-view-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-card:hover .quick-view-btn {
+            opacity: 1;
+        }
+
+        .compare-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .sort-options {
+            transition: all 0.3s ease;
+        }
+
+        .price-range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 5px;
+            background: #ddd;
+            outline: none;
+        }
+
+        .price-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #f7931a;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .newsletter-input {
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-input:focus {
+            transform: scale(1.02);
+        }
+
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .payment-option {
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            transform: scale(1.05);
+        }
+
+        .shipping-option-card {
+            transition: all 0.3s ease;
+        }
+
+        .shipping-option-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="bg-black text-white p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <i class="fab fa-bitcoin text-yellow-500 mr-2"></i>
+                Bitcoin Shop
+            </h1>
+            <div class="flex items-center space-x-4">
+                <button onclick="showCartModal()" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Cart <span id="cart-count" class="ml-2 bg-yellow-500 text-black px-2 py-1 rounded-full text-sm">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section text-white py-20">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-4">Welcome to the Future of Shopping</h2>
+            <p class="text-xl mb-8">Pay with Bitcoin - Fast, Secure, and Decentralized</p>
+            <button onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})" 
+                    class="bg-yellow-500 text-black px-8 py-3 rounded-lg font-bold hover:bg-yellow-400 transition">
+                Shop Now
+            </button>
+        </div>
+        <div class="mt-8">
+            <div class="flex justify-center space-x-4">
+                <a href="#" class="social-icon text-2xl hover:text-yellow-500"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon text-2xl hover:text-yellow-500"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="social-icon text-2xl hover:text-yellow-500"><i class="fab fa-discord"></i></a>
+                <a href="#" class="social-icon text-2xl hover:text-yellow-500"><i class="fab fa-bitcoin"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container mx-auto p-4">
+        <!-- Enhanced Search and Filter Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <input type="text" id="search-input" placeholder="Search products..." 
+                       class="search-bar flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                <select id="category-filter" class="category-filter p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Storage">Storage</option>
+                    <option value="Smart Home">Smart Home</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Wearables">Wearables</option>
+                    <option value="Computers">Computers</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Networking">Networking</option>
+                    <option value="Software">Software</option>
+                </select>
+                <select id="sort-options" class="sort-options p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <option value="default">Sort by</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="rating">Rating</option>
+                    <option value="newest">Newest</option>
+                </select>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow mb-4">
+                <h3 class="font-bold mb-2">Price Range</h3>
+                <input type="range" min="0" max="1" step="0.01" value="1" class="price-range-slider" id="price-range">
+                <div class="flex justify-between mt-2">
+                    <span>0 BTC</span>
+                    <span id="max-price">1 BTC</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="products">
+            <!-- Products will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Enhanced Product Details Modal -->
+    <div id="product-details-modal" class="product-details-modal hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="bg-white p-6 rounded-lg max-w-4xl mx-auto mt-20 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modal-product-name" class="text-2xl font-bold"></h2>
+                <button onclick="hideProductDetails()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <img id="modal-product-image" src="" alt="" class="w-full h-64 object-cover rounded-lg">
+                <div>
+                    <p id="modal-product-description" class="text-gray-600 mb-4"></p>
+                    <div class="flex items-center mb-4">
+                        <div id="modal-product-rating" class="flex"></div>
+                        <span id="modal-product-stock" class="text-sm text-gray-500 ml-4"></span>
+                    </div>
+                    <p id="modal-product-price" class="text-2xl font-bold mb-4"></p>
+                    <div class="flex items-center mb-4">
+                        <label class="mr-2">Quantity:</label>
+                        <input type="number" id="product-quantity" min="1" value="1" 
+                               class="quantity-selector p-2 border rounded">
+                    </div>
+                    <button onclick="addToCartFromModal()" 
+                            class="bg-black text-white px-4 py-2 rounded w-full hover:bg-gray-800 transition">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4">Reviews</h3>
+                <div id="product-reviews" class="space-y-4">
+                    <!-- Reviews will be loaded here -->
+                </div>
+            </div>
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4">Compare with Similar Products</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="similar-products">
+                    <!-- Similar products will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md mx-auto mt-20">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Shopping Cart</h2>
+                <button onclick="hideCartModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="max-h-96 overflow-y-auto"></div>
+            <div class="mt-4 border-t pt-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span id="cart-subtotal" class="font-bold">0 BTC</span>
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-gray-600">Total:</span>
+                    <span id="cart-total" class="text-xl font-bold">0 BTC</span>
+                </div>
+                <div id="shipping-form" class="mb-4">
+                    <h3 class="font-bold mb-2">Shipping Information</h3>
+                    <div class="space-y-2">
+                        <input type="text" id="full-name" placeholder="Full Name" class="w-full p-2 border rounded">
+                        <input type="text" id="street-address" placeholder="Street Address" class="w-full p-2 border rounded">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="city" placeholder="City" class="p-2 border rounded">
+                            <input type="text" id="zip-code" placeholder="ZIP Code" class="p-2 border rounded">
+                        </div>
+                        <input type="text" id="country" placeholder="Country" class="w-full p-2 border rounded">
+                        <input type="email" id="email" placeholder="Email Address" class="w-full p-2 border rounded">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h3 class="font-bold mb-2">Shipping Options</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="shipping-option-card bg-white p-4 rounded-lg border cursor-pointer">
+                            <h4 class="font-bold">Standard</h4>
+                            <p class="text-gray-600">5-7 business days</p>
+                            <p class="text-green-600">Free</p>
+                        </div>
+                        <div class="shipping-option-card bg-white p-4 rounded-lg border cursor-pointer">
+                            <h4 class="font-bold">Express</h4>
+                            <p class="text-gray-600">2-3 business days</p>
+                            <p class="text-yellow-600">+0.001 BTC</p>
+                        </div>
+                        <div class="shipping-option-card bg-white p-4 rounded-lg border cursor-pointer">
+                            <h4 class="font-bold">Priority</h4>
+                            <p class="text-gray-600">1-2 business days</p>
+                            <p class="text-red-600">+0.002 BTC</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h3 class="font-bold mb-2">Payment Options</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="payment-option bg-white p-4 rounded-lg border cursor-pointer text-center">
+                            <i class="fab fa-bitcoin text-2xl text-yellow-500 mb-2"></i>
+                            <p>Bitcoin</p>
+                        </div>
+                        <div class="payment-option bg-white p-4 rounded-lg border cursor-pointer text-center">
+                            <i class="fab fa-ethereum text-2xl text-purple-500 mb-2"></i>
+                            <p>Ethereum</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="processPayment()" class="bitcoin-payment px-4 py-2 rounded w-full flex items-center justify-center">
+                    <i class="fab fa-bitcoin mr-2"></i>
+                    Checkout with Bitcoin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div id="order-confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md mx-auto mt-20">
+            <div class="text-center">
+                <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+                <h2 class="text-2xl font-bold mb-4">Order Confirmed!</h2>
+                <p class="text-gray-600 mb-4">Your order has been received and is being processed.</p>
+                <div class="bg-gray-100 p-4 rounded mb-4">
+                    <p class="font-bold">Order ID: <span id="order-id"></span></p>
+                    <p class="text-sm text-gray-600">Please save this for reference</p>
+                </div>
+                <button onclick="hideOrderConfirmation()" 
+                        class="bg-black text-white px-4 py-2 rounded w-full hover:bg-gray-800 transition">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter Section -->
+    <section class="bg-gray-100 py-12 mt-12">
+        <div class="container mx-auto text-center">
+            <h2 class="text-2xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+            <p class="text-gray-600 mb-6">Get the latest updates on new products and special offers</p>
+            <div class="max-w-md mx-auto">
+                <div class="flex">
+                    <input type="email" placeholder="Enter your email" 
+                           class="newsletter-input flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <button class="bg-black text-white px-6 py-3 rounded-r-lg hover:bg-gray-800 transition">
+                        Subscribe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black text-white py-8 mt-12">
+        <div class="container mx-auto text-center">
+            <p class="mb-4">© 2024 Bitcoin Shop. All rights reserved.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#" class="hover:text-yellow-500"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="hover:text-yellow-500"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="hover:text-yellow-500"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample products data with better images and details
+        const products = [
+            {
+                id: 1,
+                name: "Premium Gaming Laptop",
+                description: "High-performance gaming laptop with RTX 4090, 32GB RAM, and 2TB SSD",
+                price: "0.15",
+                image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Electronics",
+                rating: 4.8,
+                stock: 5
+            },
+            {
+                id: 2,
+                name: "Smart Watch Pro",
+                description: "Advanced smartwatch with health monitoring and 7-day battery life",
+                price: "0.05",
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Wearables",
+                rating: 4.5,
+                stock: 10
+            },
+            {
+                id: 3,
+                name: "Wireless Headphones",
+                description: "Premium noise-cancelling headphones with 30-hour battery life",
+                price: "0.03",
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Audio",
+                rating: 4.7,
+                stock: 15
+            },
+            {
+                id: 4,
+                name: "4K Camera",
+                description: "Professional 4K camera with advanced stabilization and night mode",
+                price: "0.12",
+                image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Photography",
+                rating: 4.9,
+                stock: 3
+            },
+            {
+                id: 5,
+                name: "Smart Home Hub",
+                description: "Central control for all your smart home devices with voice control",
+                price: "0.08",
+                image: "https://images.unsplash.com/photo-1544273677-c433136021d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Smart Home",
+                rating: 4.6,
+                stock: 8
+            },
+            {
+                id: 6,
+                name: "Gaming Console",
+                description: "Next-gen gaming console with 4K HDR and ray tracing support",
+                price: "0.25",
+                image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Gaming",
+                rating: 4.9,
+                stock: 4
+            },
+            {
+                id: 7,
+                name: "Mechanical Keyboard",
+                description: "RGB mechanical keyboard with customizable switches and macros",
+                price: "0.02",
+                image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Accessories",
+                rating: 4.7,
+                stock: 12
+            },
+            {
+                id: 8,
+                name: "Gaming Mouse",
+                description: "High-precision gaming mouse with adjustable DPI and RGB lighting",
+                price: "0.015",
+                image: "https://images.unsplash.com/photo-1527814050087-3793815479db?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Accessories",
+                rating: 4.6,
+                stock: 15
+            },
+            {
+                id: 9,
+                name: "External SSD",
+                description: "1TB external SSD with USB-C and 1000MB/s read speeds",
+                price: "0.07",
+                image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Storage",
+                rating: 4.8,
+                stock: 7
+            },
+            {
+                id: 10,
+                name: "Wireless Charger",
+                description: "Fast wireless charger with multiple device support",
+                price: "0.01",
+                image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Accessories",
+                rating: 4.4,
+                stock: 20
+            },
+            {
+                id: 11,
+                name: "VR Headset",
+                description: "Immersive VR headset with 4K resolution and motion tracking",
+                price: "0.18",
+                image: "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Gaming",
+                rating: 4.7,
+                stock: 6
+            },
+            {
+                id: 12,
+                name: "Smart Speaker",
+                description: "Premium smart speaker with voice assistant and room-filling sound",
+                price: "0.04",
+                image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                category: "Audio",
+                rating: 4.5,
+                stock: 9
+            }
+        ];
+
+        // Add sample reviews
+        const reviews = {
+            1: [
+                { user: "John D.", rating: 5, comment: "Amazing laptop! Runs all my games at max settings." },
+                { user: "Sarah M.", rating: 4, comment: "Great performance but battery life could be better." }
+            ],
+            2: [
+                { user: "Mike R.", rating: 5, comment: "Best smartwatch I've ever owned!" },
+                { user: "Emma L.", rating: 4, comment: "Very accurate health tracking features." }
+            ]
+            // Add more reviews for other products
+        };
+
+        // Global variables
+        let cart = [];
+        const binanceAddress = '1KcLX6LBswVMjcdta7SuXJoTRegt7Yd7QF';
+        let currentProduct = null;
+        let wishlist = new Set();
+        let comparisonProducts = new Set();
+
+        // DOM Elements
+        const productsContainer = document.getElementById('products');
+        const cartModal = document.getElementById('cart-modal');
+        const productDetailsModal = document.getElementById('product-details-modal');
+        const orderConfirmationModal = document.getElementById('order-confirmation-modal');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const sortOptions = document.getElementById('sort-options');
+        const priceRange = document.getElementById('price-range');
+        const maxPrice = document.getElementById('max-price');
+
+        // Search and Filter functionality
+        searchInput.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+        sortOptions.addEventListener('change', function(e) {
+            const sortBy = e.target.value;
+            let sortedProducts = [...products];
+            
+            switch(sortBy) {
+                case 'price-asc':
+                    sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+                    break;
+                case 'price-desc':
+                    sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+                    break;
+                case 'rating':
+                    sortedProducts.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'newest':
+                    sortedProducts.sort((a, b) => b.id - a.id);
+                    break;
+            }
+            
+            displayProducts(sortedProducts);
+        });
+
+        function filterProducts() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                                    product.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !category || product.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            
+            displayProducts(filteredProducts);
+        }
+
+        // Display products with enhanced features
+        function displayProducts(productsToShow = products) {
+            productsContainer.innerHTML = productsToShow.map(product => `
+                <div class="bg-white p-4 rounded-lg shadow product-card relative">
+                    <button onclick="toggleWishlist(${product.id})" 
+                            class="wishlist-btn" data-product-id="${product.id}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <input type="checkbox" class="compare-checkbox" 
+                           data-product-id="${product.id}"
+                           onchange="toggleComparison(${product.id})">
+                    <span class="category-badge">${product.category}</span>
+                    <img src="${product.image}" alt="${product.name}" 
+                         class="w-full h-64 object-cover mb-4 rounded-lg cursor-pointer"
+                         onclick="showProductDetails(${product.id})">
+                    <h3 class="text-xl font-bold cursor-pointer" onclick="showProductDetails(${product.id})">
+                        ${product.name}
+                    </h3>
+                    <p class="text-gray-600 mb-2">${product.description}</p>
+                    <div class="flex items-center mb-2">
+                        ${Array(5).fill().map((_, i) => `
+                            <i class="fas fa-star ${i < Math.floor(product.rating) ? 'text-yellow-500' : 'text-gray-300'}"></i>
+                        `).join('')}
+                        <span class="text-gray-600 ml-2">(${product.rating})</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-lg font-bold">${product.price} BTC</p>
+                        <span class="text-sm text-gray-500">${product.stock} in stock</span>
+                    </div>
+                    <button onclick="showProductDetails(${product.id})" 
+                            class="bg-black text-white px-4 py-2 rounded mt-4 w-full hover:bg-gray-800 transition">
+                        View Details
+                    </button>
+                    <button onclick="showProductDetails(${product.id})" 
+                            class="quick-view-btn">
+                        Quick View
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Product details functionality
+        function showProductDetails(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            if (currentProduct) {
+                document.getElementById('modal-product-name').textContent = currentProduct.name;
+                document.getElementById('modal-product-image').src = currentProduct.image;
+                document.getElementById('modal-product-description').textContent = currentProduct.description;
+                document.getElementById('modal-product-price').textContent = currentProduct.price + ' BTC';
+                document.getElementById('modal-product-stock').textContent = currentProduct.stock + ' in stock';
+                
+                const ratingContainer = document.getElementById('modal-product-rating');
+                ratingContainer.innerHTML = Array(5).fill().map((_, i) => `
+                    <i class="fas fa-star ${i < Math.floor(currentProduct.rating) ? 'text-yellow-500' : 'text-gray-300'}"></i>
+                `).join('');
+
+                const reviewsContainer = document.getElementById('product-reviews');
+                reviewsContainer.innerHTML = (reviews[productId] || []).map(review => `
+                    <div class="review-card bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <div class="flex">
+                                ${Array(5).fill().map((_, i) => `
+                                    <i class="fas fa-star ${i < review.rating ? 'text-yellow-500' : 'text-gray-300'}"></i>
+                                `).join('')}
+                            </div>
+                            <span class="ml-2 font-bold">${review.user}</span>
+                        </div>
+                        <p class="text-gray-600">${review.comment}</p>
+                    </div>
+                `).join('');
+
+                productDetailsModal.classList.remove('hidden');
+            }
+        }
+
+        function hideProductDetails() {
+            productDetailsModal.classList.add('hidden');
+        }
+
+        function addToCartFromModal() {
+            const quantity = parseInt(document.getElementById('product-quantity').value);
+            if (currentProduct && quantity > 0) {
+                for (let i = 0; i < quantity; i++) {
+                    cart.push(currentProduct);
+                }
+                updateCart();
+                hideProductDetails();
+                showCartModal();
+            }
+        }
+
+        // Enhanced cart functionality
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const cartSubtotal = document.getElementById('cart-subtotal');
+            const cartCount = document.getElementById('cart-count');
+
+            // Group items by product ID
+            const groupedCart = cart.reduce((acc, item) => {
+                if (!acc[item.id]) {
+                    acc[item.id] = { ...item, quantity: 0 };
+                }
+                acc[item.id].quantity++;
+                return acc;
+            }, {});
+
+            cartItems.innerHTML = Object.values(groupedCart).map(item => `
+                <div class="flex justify-between items-center mb-4 pb-4 border-b">
+                    <div class="flex items-center">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded mr-4">
+                        <div>
+                            <h4 class="font-bold">${item.name}</h4>
+                            <p class="text-sm text-gray-600">${item.price} BTC x ${item.quantity}</p>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            cartTotal.textContent = total.toFixed(8) + ' BTC';
+            cartSubtotal.textContent = total.toFixed(8) + ' BTC';
+            cartCount.textContent = cart.length;
+        }
+
+        // Enhanced payment process
+        function processPayment() {
+            const fullName = document.getElementById('full-name').value;
+            const streetAddress = document.getElementById('street-address').value;
+            const city = document.getElementById('city').value;
+            const zipCode = document.getElementById('zip-code').value;
+            const country = document.getElementById('country').value;
+            const email = document.getElementById('email').value;
+
+            if (!fullName || !streetAddress || !city || !zipCode || !country || !email) {
+                alert('Please fill in all shipping information fields');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+            const message = `
+                Order Summary:
+                -------------
+                Order ID: ${orderId}
+                Items: ${cart.map(item => item.name).join(', ')}
+                Total: ${total.toFixed(8)} BTC
+                
+                Shipping Information:
+                -------------------
+                Name: ${fullName}
+                Address: ${streetAddress}
+                City: ${city}
+                ZIP: ${zipCode}
+                Country: ${country}
+                Email: ${email}
+                
+                Payment Instructions:
+                -------------------
+                Please send exactly ${total.toFixed(8)} BTC to the following address:
+                
+                ${binanceAddress}
+                
+                After sending the payment, your order will be processed and shipped to the provided address.
+                
+                Note: Make sure to send the exact amount to ensure proper order processing.
+            `;
+
+            alert(message);
+            document.getElementById('order-id').textContent = orderId;
+            cart = [];
+            updateCart();
+            hideCartModal();
+            showOrderConfirmation();
+        }
+
+        function showOrderConfirmation() {
+            orderConfirmationModal.classList.remove('hidden');
+        }
+
+        function hideOrderConfirmation() {
+            orderConfirmationModal.classList.add('hidden');
+        }
+
+        // Show/hide cart modal
+        function showCartModal() {
+            cartModal.classList.remove('hidden');
+        }
+
+        function hideCartModal() {
+            cartModal.classList.add('hidden');
+        }
+
+        // Remove item from cart
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        // Add wishlist functionality
+        function toggleWishlist(productId) {
+            if (wishlist.has(productId)) {
+                wishlist.delete(productId);
+            } else {
+                wishlist.add(productId);
+            }
+            updateWishlistButton(productId);
+        }
+
+        function updateWishlistButton(productId) {
+            const button = document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+            if (button) {
+                button.classList.toggle('active', wishlist.has(productId));
+            }
+        }
+
+        // Add comparison functionality
+        function toggleComparison(productId) {
+            if (comparisonProducts.has(productId)) {
+                comparisonProducts.delete(productId);
+            } else {
+                if (comparisonProducts.size >= 3) {
+                    alert('You can compare up to 3 products at a time');
+                    return;
+                }
+                comparisonProducts.add(productId);
+            }
+            updateComparisonCheckbox(productId);
+        }
+
+        function updateComparisonCheckbox(productId) {
+            const checkbox = document.querySelector(`.compare-checkbox[data-product-id="${productId}"]`);
+            if (checkbox) {
+                checkbox.checked = comparisonProducts.has(productId);
+            }
+        }
+
+        // Price range filter
+        priceRange.addEventListener('input', function(e) {
+            const maxPrice = parseFloat(e.target.value);
+            document.getElementById('max-price').textContent = maxPrice.toFixed(2) + ' BTC';
+            
+            const filteredProducts = products.filter(product => 
+                parseFloat(product.price) <= maxPrice
+            );
+            
+            displayProducts(filteredProducts);
+        });
+
+        // Initialize the page
+        displayProducts();
+    </script>
+</body>
+</html> 
